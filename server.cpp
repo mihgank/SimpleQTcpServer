@@ -37,10 +37,11 @@ void Server::slotReadyRead(){
     in.setVersion(QDataStream::Qt_6_4);
     QString requestString;
 
-    auto getIp = [this](){
-       QTcpSocket* new_socket = QTcpServer::nextPendingConnection();
-       return new_socket->peerAddress().toString();
-    };
+
+//    auto getIp = [this](){
+//       QTcpSocket* new_socket = QTcpServer::nextPendingConnection();
+//       return new_socket->peerAddress().toString();
+//    };
 
     if(in.status() == QDataStream::Ok){
         qDebug() << "reading data from stream...";
@@ -69,32 +70,27 @@ void Server::slotReadyRead(){
     qDebug() << "Request unparsed sucessfully";
 
     //Check Json is valid
-    qDebug() << request.username;
-    qDebug() << request.time;
-    qDebug() << request.resources;
+
     if(!usernameAccepted(request.username, options.acceptedUsers)){
-        SendToClient("acess for user" + request.username + "denied", socket);
-        bannedIps.push_back(getIp());
-        socket->disconnected();
+        SendToClient("acess for user " + request.username + " denied", socket);
+//        bannedIps.push_back(getIp());
         return;
     }
 
-    if(!ipNotBanned(getIp())){
-        SendToClient("acess denied", socket);
-        return;
-    }
-    qDebug() << "ip not Banned";
+//    if(!ipNotBanned(getIp())){
+//        SendToClient("acess denied", socket);
+//        return;
+//    }
+//    qDebug() << "ip not Banned";
 
     //TODO: first check user is not already connected
     User *connectedUser = new User(request.username);
     connectedUsers.push_back(connectedUser);
 
-    qDebug() << "User Object created";
 
     //check is this connect requst or resource request
-    if(request.resources.size() != 0){
+    if(request.resources.size() <= 0){
        SendToClient("connected sucessfully", socket);
-       return;
     }
     else{
         qDebug() << "try take resource";
@@ -105,7 +101,7 @@ void Server::slotReadyRead(){
         for(auto resource: request.resources){
             response.resource = iterator+1;
 
-            //проверка на существование ресурса
+            //проверка на существование ресурса с таким индексом
             if(iterator >= resourceController->resources.size()){
                response.status = 0;
                SendToClient(response.toJsonString(), socket);
@@ -116,7 +112,10 @@ void Server::slotReadyRead(){
                          response.status = 1;
                     else
                         response.status = 0;
+
+                    SendToClient(response.toJsonString(), socket);
                 }
+
             }
             iterator++;
              qDebug() << "resource taked";
@@ -128,7 +127,7 @@ void Server::slotReadyRead(){
 
 
     //end of middlewares
-    SendToClient(response.toJsonString(), socket);
+
 }
 
 //send response to one client
@@ -160,7 +159,6 @@ void Server::SendToAllClients(QString str){
 //Middlewares
 
 bool Server::usernameAccepted(QString username, QStringList acceptedUsers){
-     qDebug() << username << " : ";
     for(QString user: acceptedUsers){
         if(user == username){
             return true;
@@ -168,11 +166,11 @@ bool Server::usernameAccepted(QString username, QStringList acceptedUsers){
     }
     return false;
 };
-bool Server::ipNotBanned(QString socketIp){
-    for(QString ip: bannedIps){
-        if(ip == socketIp)
-            return false;
-    }
-    return true;
-};
+//bool Server::ipNotBanned(QString socketIp){
+//    for(QString ip: bannedIps){
+//        if(ip == socketIp)
+//            return false;
+//    }
+//    return true;
+//};
 

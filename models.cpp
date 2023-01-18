@@ -14,7 +14,7 @@ Options::Options(QString settingsPath){
     this->maxUsers = settings.value("settings/max_users").toInt();
     this->port = settings.value("settings/ports").toStringList()[0].toInt();
     this->maxReserveTime = settings.value("settings/maxReserveTime").toInt();
-    this->resourcesCounter = settings.value("settings/maxReserveTime").toInt();
+    this->resourcesCounter = settings.value("settings/resourcesCounter").toInt();
 };
 
 //UserClass
@@ -50,23 +50,29 @@ ResourceController::ResourceController(quint32 resCount){
 
 //Request Class
  Request::Request(QString jsonData){
-
-
-    QJsonDocument doc = QJsonDocument::fromJson(jsonData.toUtf8());
+    QJsonParseError err;
+    QJsonDocument doc = QJsonDocument::fromJson(jsonData.toUtf8(), &err);
+    qDebug() << &err;
     QJsonObject obj = doc.object();
     QJsonValue requestedResources;
 
+    if(doc.isEmpty()){
+        qDebug() << "document empty";
+    }
+    if(!doc.isObject()){
+        qDebug() << "document isn't object";
+    }
 
 
-    this->username = obj.value("username").toString();
-     qDebug() << "parsed name: " << obj.value("username").toString();
-
+   this->username = obj.value("username").toString();
    this->time = obj.value("time").toInt();
+   requestedResources = obj.value("resource");
 
-   requestedResources = obj.value("resourse");
+
+   auto loop_str = requestedResources.toString().toStdString();
    //request byte unparse
-   for(quint8 res: requestedResources.toString().toStdString()){
-    if(res > 0)
+   for(auto c: loop_str){
+    if(c != '0')
         this->resources.push_back(1);
     else
         this->resources.push_back(0);
