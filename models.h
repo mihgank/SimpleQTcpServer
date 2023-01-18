@@ -27,11 +27,12 @@ public:
     bool ResorceRequest(User *user, quint32 timeToReserve, quint32 maxReserveTime);
     quint32 currentReservedTime();
     Resource(quint32 index);
+    User *ReservedByUser = nullptr;
 private:
     quint32 index = 0;
     quint64 reserveTime = 0; //time in seconds for reserve
     quint64 reserveStartAt = 0; //time when reserve started
-    User *ReservedByUser = nullptr;
+
 };
 
 class ResourceController{

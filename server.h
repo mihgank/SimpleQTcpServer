@@ -5,7 +5,6 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QVector>
-
 #include "models.h"
 
 class Server: public QTcpServer{
@@ -22,6 +21,9 @@ private:
     Options options;
     QVector <QString> bannedIps;
     QVector <User*> connectedUsers;
+
+    QMap<User*, QTcpSocket*> usersSokets;
+
     ResourceController *resourceController;
 
     //request methods

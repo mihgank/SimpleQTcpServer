@@ -1,8 +1,6 @@
 #include "server.h"
 
-//TODO 1 - реализовать модели +-
 //TODO 2 - реализовать мидлвары
-//TODO 3 - реализовать резервирование  ресурсов(пока без времени)
 //TODO 4 - если клиент разорвал соединение, освобождать ресурс(опционально)
 
 Server::Server(){
@@ -63,13 +61,14 @@ void Server::slotReadyRead(){
         qDebug() << "DataStream error";
     }
     qDebug()<< "request string = " + requestString;
-    //TODO: cast json request to Object of "Request"
+
+    //cast json request to Object of "Request"
     Request request(requestString);
     Response response;
     //TODO: middlewares here
     qDebug() << "Request unparsed sucessfully";
 
-    //Check Json is valid
+    //TODO: Check Json is valid
 
     if(!usernameAccepted(request.username, options.acceptedUsers)){
         SendToClient("acess for user " + request.username + " denied", socket);
@@ -86,7 +85,7 @@ void Server::slotReadyRead(){
     //TODO: first check user is not already connected
     User *connectedUser = new User(request.username);
     connectedUsers.push_back(connectedUser);
-
+    usersSokets.insert(connectedUser, socket);
 
     //check is this connect requst or resource request
     if(request.resources.size() <= 0){
@@ -110,16 +109,15 @@ void Server::slotReadyRead(){
             else{
                 if(resource>0){
                     if(resourceController->resources[iterator]->ResorceRequest(connectedUser, request.time, options.maxReserveTime))
-                         response.status = 1;
+                        response.status = 1;
                     else
                         response.status = 0;
 
+                    SendToClient("resource taked by another user" , usersSokets.take(resourceController->resources[iterator]->ReservedByUser));
                     SendToClient(response.toJsonString(), socket);
                 }
-
             }
             iterator++;
-            //TODO request for resources and responses
         }
     }
 
