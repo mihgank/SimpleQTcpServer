@@ -24,7 +24,8 @@ public:
 
 class Resource{
 public:
-    bool ResorceRequest(User *user);
+    bool ResorceRequest(User *user, quint32 timeToReserve, quint32 maxReserveTime);
+    quint32 currentReservedTime();
     Resource(quint32 index);
 private:
     quint32 index = 0;

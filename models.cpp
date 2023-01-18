@@ -1,4 +1,5 @@
 #include "models.h"
+#include "utils.h"
 
 #include <QSettings>
 #include <QJsonObject>
@@ -26,18 +27,28 @@ User::User(QString _username){
 Resource::Resource(quint32 _index){
     this->index = _index;
 }
-bool Resource::ResorceRequest(User *user){
+bool Resource::ResorceRequest(User *user, quint32 timeToReserve, quint32 maxReserveTime){
     if(this->ReservedByUser == nullptr){
-       this->ReservedByUser = user;
-        //TODO: working with time;
-       return true;
+        this->ReservedByUser = user;
+        this->reserveStartAt = utils::GetCurrentTime();
+        this->reserveTime = timeToReserve;
+        return true;
     }
-    else{
-        //TODO: check if time < Z(maxTime)
-        return false;
+    if((currentReservedTime() > maxReserveTime)||(currentReservedTime() > this->reserveTime)){
+        this->ReservedByUser = user;
+        this->reserveStartAt = utils::GetCurrentTime();
+        this->reserveTime = timeToReserve;
+        return true;
     }
+    return false;
 
 }
+quint32 Resource::currentReservedTime(){
+    return utils::GetCurrentTime() - this->reserveStartAt;
+}
+
+
+
 //Resource Controller Class
 ResourceController::ResourceController(quint32 resCount){
     for(quint32 i = 0; i < resCount; i++){

@@ -92,6 +92,7 @@ void Server::slotReadyRead(){
     if(request.resources.size() <= 0){
        SendToClient("connected sucessfully", socket);
     }
+    //elseif "first you need to login"
     else{
         qDebug() << "try take resource";
         Response response;
@@ -108,7 +109,7 @@ void Server::slotReadyRead(){
             }
             else{
                 if(resource>0){
-                    if(resourceController->resources[iterator]->ResorceRequest(connectedUser))
+                    if(resourceController->resources[iterator]->ResorceRequest(connectedUser, request.time, options.maxReserveTime))
                          response.status = 1;
                     else
                         response.status = 0;
@@ -118,7 +119,6 @@ void Server::slotReadyRead(){
 
             }
             iterator++;
-             qDebug() << "resource taked";
             //TODO request for resources and responses
         }
     }
